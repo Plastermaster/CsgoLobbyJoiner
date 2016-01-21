@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -65,50 +65,20 @@ namespace CsgoLobbyJoiner
 
             var cuser = clientengine.GetIClientUser<IClientUser>(user, pipe);
 
+
             Console.WriteLine($"Your id: {cuser.GetSteamID()}");
 
-            if (!File.Exists("apikey.txt"))
-            {
-                Console.WriteLine("Please get an API key from https://steamcommunity.com/dev/apikey and put it in apikey.txt next to the .exe");
-                Console.ReadKey();
-                return -1;
-            }
-
-            var apikey = File.ReadAllText("apikey.txt");
-
-            long baselobby = 0;
-            using (var http = new HttpClient())
-            {
-                while (baselobby == 0)
-                {
-                    var res =
-                        http.GetAsync(
-                            $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v1/?key={apikey}&format=json&steamids={cuser.GetSteamID().ConvertToUint64()}")
-                            .Result;
-                    if (res.IsSuccessStatusCode)
-                    {
-                        var jsonresp = JsonConvert.DeserializeObject<dynamic>(res.Content.ReadAsStringAsync().Result);
-                        if (jsonresp.response?.players?.player?[0]?.lobbysteamid != null)
-                        {
-                            baselobby = jsonresp.response?.players?.player?[0]?.lobbysteamid;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Please create a lobby in-game to start the process, retrying in 3s...");
-                            Thread.Sleep(3000);
-                        }
-
-                    }
-                }
-
-            }
-
-            Console.WriteLine($"Found your lobby, it's: {baselobby}. Starting search! ");
+            Console.WriteLine("(right click the 'join' button on your Steam profile and copy the URL, then ONLY paste then number here)");
+            Console.WriteLine("Enter LobbyID  :");
+            long lobbyID = Convert.ToInt64(Console.ReadLine());
+            
+            
+            Console.WriteLine($"Your set lobby is: {lobbyID}. Starting search! ");
             for (;;)
             {
-                Console.WriteLine($"Joining {baselobby}, hit a key to join the next");
+                Console.WriteLine($"Joining {lobbyID}, hit a key to join the next");
 
-                System.Diagnostics.Process.Start($"steam://joinlobby/730/{baselobby++}/{cuser.GetSteamID().ConvertToUint64()}");
+                System.Diagnostics.Process.Start($"steam://joinlobby/730/{lobbyID++}/{cuser.GetSteamID().ConvertToUint64()}");
 
                 Console.ReadKey();
             }
